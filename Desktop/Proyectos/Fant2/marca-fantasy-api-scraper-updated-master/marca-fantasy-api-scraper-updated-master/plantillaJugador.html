@@ -1,0 +1,296 @@
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>{{ player_name }}</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/meyer-reset/2.0/reset.min.css">
+      <link rel="stylesheet" href="css/plant.css">
+      <link rel="stylesheet" href="css/cardPlayer.css">
+      <link rel="stylesheet" href="css/font-awesome.min.css">
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prefixfree/1.0.7/prefixfree.min.js"></script>
+      <link rel="icon" href="{{ url_for('static', filename='img/favicon.ico') }}" type="image/x-icon">
+      <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+      <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+
+      </head>
+      
+<body>
+    <div class="header">  
+        <div class="header__logo">
+          <a href="{{ url_for('inicio') }}">
+          <img src="{{ url_for('static', filename='img/logoF.png') }}" class="imagen-con-brillo" style="width: 30%; margin-top: 2%;"></img>
+          </a>
+        </div>
+        <nav class="navbar">
+          <ul class="navbar__menu">
+            <li class="navbar__item">
+              <a href="inicio.html" class="navbar__link"><i data-feather="Inicio"></i><span>Inicio</span> </a>
+            </li>
+            <li class="navbar__item">
+              <a href="{{ url_for('bigdata') }}" class="navbar__link"><i data-feather="Big data"></i><span>Big data</span></a>        
+            </li>
+            <li class="navbar__item">
+              <a href="miequipo.html" class="navbar__link"><i data-feather="Mi equipo"></i><span>Mi equipo</span></a>        
+            </li>
+            <li class="navbar__item">
+              <a href="predictor.html" class="navbar__link"><i data-feather="Predictor"></i><span>Predictor</span></a>        
+            </li>
+          </ul>
+        </nav>
+      </div>
+      <!-- partial -->
+        <script src='https://unpkg.com/feather-icons'></script><script  src="./script.js"></script>
+      
+    <h1>Detalles de jugador</h1>
+
+    <div class="card">
+      <div class="front bg-red-box">
+        <div style="display: inline-flex; width: 100%">
+          <img src={{ player.jugador.equipo }} style='width: 15%;'>
+          <div style="margin-top: 1%;">
+            <p style="font-size: 35px;">{{ player.jugador.nombre }}</p>
+          </div>
+        </div>
+          <div style="margin-top: 20%; text-align: center">
+            <p style="text-align: center;"><img src={{ player.jugador.imagen }} style='width:100%; margin-bottom: 5%;'></p>
+            <p>Valor de mercado: {{ player.jugador.valorFormateado }} €</p>
+            <p>Última variación de precio: {{ player.jugador.subidaFormateado }} €</p>
+            <p>Subida respecto a valor: {{ player.jugador.propSubidaFormateado }} %</p>
+          </div>
+          <div class="bottom" style="height: 23%">
+              <button id="verGraficas" class="buttonExotic" style="width: 40%;">Ver gráficas</button>
+          </div>
+      </div>
+      <div class="back">
+        <div style="display: inline-flex; width: 100%; margin-top: -1%;">
+          <img src={{ player.jugador.equipo }} style='width: 15%;'>
+          <div style="margin-top: 1%;">
+            <p style="font-size: 35px;">{{ player.jugador.nombre }}</p>
+          </div>
+        </div>
+          <div class="section" style="height: 33%; font-size: 26px; margin-top: 45px;">
+            <div style="width: 100%;">
+              <canvas id="graficoJornadas"></canvas>
+            </div>
+          </div>
+          <div class="section" style="height: 33%; font-size: 26px; margin-top: 45px;">
+            <div style="width: 100%;">
+              <canvas id="graficoValores"></canvas>
+            </div>
+          </div>
+          <div class="bottom" style="height: 27%">
+              <button id="verJugador" class="buttonExotic">Ver jugador</button>
+          </div>
+      </div>
+  </div>
+
+  <script>
+    const verMetricasBtn = document.getElementById("verGraficas");
+    const verPrediccionBtn = document.getElementById("verJugador");
+    const card = document.querySelector('.card');
+    const front = document.querySelector('.front');
+
+
+    verMetricasBtn.addEventListener('click', () => {
+        card.classList.add('active');
+    });
+
+    verPrediccionBtn.addEventListener('click', () => {
+        card.classList.remove('active');
+    });
+
+</script>
+
+<script>
+  // Datos de ejemplo (reemplaza esto con los datos reales)
+
+  const registroPuntoss = JSON.parse({{ registroPuntos | tojson | safe }});
+  // Obtiene las claves (números de jornada) y valores (puntos) del registro
+  const jornadas = Object.keys(registroPuntoss);
+  const puntos = Object.values(registroPuntoss);
+
+  // Crea un canvas y establece su contexto
+  const canvas = document.getElementById('graficoJornadas');
+  const ctx = canvas.getContext('2d');
+
+  // Configura la paleta de colores para la línea
+  const color = 'red'; // Puedes cambiar el color si lo deseas
+
+  // Dibuja una línea continua
+  ctx.beginPath();
+  ctx.moveTo(0, canvas.height - puntos[0]); // Mueve el punto de inicio al primer valor
+  for (let i = 1; i < puntos.length; i++) {
+    ctx.lineTo((i / (puntos.length - 1)) * canvas.width, canvas.height - puntos[i]);
+  }
+  ctx.strokeStyle = color; // Establece el color de la línea
+  ctx.lineWidth = 2; // Establece el ancho de la línea
+  ctx.stroke(); // Dibuja la línea
+
+  // Agrega las etiquetas personalizadas en el eje X e Y
+  const maxYValue = Math.max(...puntos) + 2;
+  const minYValue = Math.max(Math.min(...puntos) - 2, 0);
+
+  // Crea el gráfico de línea
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: jornadas.map(jornada => `J${jornada}`), // Números de jornada en el eje X
+      datasets: [
+        {
+          label: 'Puntos por jornada',
+          data: puntos, // Puntos en el eje Y
+          borderColor: color, // Color de la línea
+          fill: false, // No rellenar debajo de la línea
+        },
+      ],
+    },
+    options: {
+      scales: {
+        y: {
+          beginAtZero: true,
+          max: maxYValue,
+          min: minYValue,
+          ticks: {
+            stepSize: (maxYValue - minYValue) / 4,
+            callback: function (value, index, values) {
+            if (value === maxYValue) return maxYValue.toString() + "pts";
+            if (value === minYValue) return minYValue.toString() + "pts";
+            if (value === minYValue + (maxYValue - minYValue) / 4) return parseInt(value.toString()) + "pts";
+            if (value === minYValue + 2 * (maxYValue - minYValue) / 4) return parseInt(value.toString()) + "pts";
+            if (value === minYValue + 3 * (maxYValue - minYValue) / 4) return parseInt(value.toString()) + "pts";
+            return '';
+            },
+          },
+        },
+        x: {
+          beginAtZero: false,
+          max: jornadas.length - 1,
+          callback: function (value, index, values) {
+            return  jornadas[value];
+          },
+        },
+      },
+    },
+    plugins: {
+      legend: {
+        display: false,
+      },
+      datalabels: {
+        display: true, // Habilita las etiquetas de datos
+        color: 'black', // Color de las etiquetas
+        anchor: 'end', // Alineación de las etiquetas
+      },
+    },
+  });
+</script>
+
+<script>
+  // Datos de ejemplo (reemplaza esto con los datos reales)
+  const registroValorr = JSON.parse({{ registroValor | tojson | safe }});
+  // Obtiene las claves (fechas) y valores (números) del registro
+  const fechas = Object.keys(registroValorr);
+  const valores = Object.values(registroValorr);
+  console.log(valores);
+
+  // Crea un canvas y establece su contexto
+  const canvas2 = document.getElementById('graficoValores');
+  const ctx2 = canvas2.getContext('2d');
+
+  // Configura la paleta de colores para la línea
+  const color2 = 'blue'; // Puedes cambiar el color si lo deseas
+
+  // Calcula los valores para el eje Y (máximo, mínimo y dos valores medios)
+  const maxYValue2 = parseInt(Math.max(...valores) + Math.max(...valores) * 0.1);
+  const minYValue2 = parseInt(Math.max(Math.min(...valores) - Math.min(...valores) * 0.1, 0));
+  
+  // Dibuja una línea continua
+  ctx2.beginPath();
+  ctx2.moveTo(0, canvas2.height - valores[0]); // Mueve el punto de inicio al primer valor
+  for (let i = 1; i < valores.length; i++) {
+    ctx2.lineTo((i / (valores.length - 1)) * canvas2.width, canvas2.height - valores[i]);
+  }
+  ctx2.strokeStyle = color2; // Establece el color de la línea
+  ctx2.lineWidth = 2; // Establece el ancho de la línea
+  ctx2.stroke(); // Dibuja la línea
+
+  // Crea el gráfico de línea
+  new Chart(ctx2, {
+    type: 'line',
+    data: {
+      labels: fechas, // Fechas en el eje X
+      datasets: [
+        {
+          label: 'Valores por fecha',
+          data: valores, // Valores en el eje Y
+          borderColor: color2, // Color de la línea
+          fill: false, // No rellenar debajo de la línea
+        },
+      ],
+    },
+    options: {
+      scales: {
+        y: {
+        beginAtZero: true,
+        max: maxYValue2,
+        min: minYValue2,
+        ticks: {
+          stepSize: (maxYValue2 - minYValue2) / 4,
+          callback: function (value, index, values) {
+            function formatMiles(numero) {
+              return new Intl.NumberFormat('es-ES').format(numero);
+            }
+            if (value === maxYValue2) return formatMiles(maxYValue2) + "€";
+            if (value === minYValue2) return formatMiles(minYValue2) + "€";
+            if (value === minYValue2 + (maxYValue2 - minYValue2) / 4) return formatMiles(parseInt(value.toString())) + "€";
+            if (value === minYValue2 + 2 * (maxYValue2 - minYValue2) / 4) return formatMiles(parseInt(value.toString())) + "€";
+            if (value === minYValue2 + 3 * (maxYValue2 - minYValue2) / 4) return formatMiles(parseInt(value.toString())) + "€";
+            return '';
+          },
+        },
+      },
+        x: {
+          beginAtZero: false,
+          max: fechas.length - 1,
+        },
+      },
+    },
+    plugins: {
+      legend: {
+        display: false,
+      },
+      datalabels: {
+        display: true, // Habilita las etiquetas de datos
+        color: 'black', // Color de las etiquetas
+        anchor: 'end', // Alineación de las etiquetas
+      },
+    },
+  });
+</script>
+
+
+
+
+
+    <!-- Agrega más datos del jugador aquí -->
+    <div class="contenido">
+        <link rel="stylesheet" href="css/backg.css">
+        <div class="lines">
+            <div class="line"></div>
+            <div class="line"></div>
+            <div class="line"></div>
+          </div>
+        
+    </div>
+
+    <!-- Pie de p�gina -->
+    <footer style="text-align: center; margin-top: 5%;" class="pie-de-pagina">
+      <p style="font-weight: bold">Redes sociales</p>
+      <div class="redes-sociales">
+        <a href="https://www.linkedin.com/in/alejandro-milla-ram%C3%ADrez-3ba742209/"><img style="width: 2%;" src="{{ url_for('static', filename='img/linkedin.png') }}" alt="LinkedIn"></a>
+        <a href="https://www.instagram.com/alex_milla99/"><img style="width: 2%;" src="{{ url_for('static', filename='img/instagram.png') }}" alt="Instagram"></a>
+        <a href="mailto:alejandromilla99@gmail.com"><img style="width: 2%;" src="{{ url_for('static', filename='img/email.png') }}" alt="Correo Electrónico"></a>
+      </div>
+  </footer>
+</body>
+</html>

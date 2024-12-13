@@ -1,0 +1,7 @@
+# Gitignore personalizado
+.idea/
+data/
+players/
+market_values/
+log.txt
+start.bat

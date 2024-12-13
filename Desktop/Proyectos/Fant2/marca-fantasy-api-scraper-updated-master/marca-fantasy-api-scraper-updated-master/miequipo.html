@@ -1,0 +1,452 @@
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Fantasy Predictor Milla</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/meyer-reset/2.0/reset.min.css">
+      <link rel="stylesheet" href="css/plant.css">
+      <link rel="stylesheet" href="css/estilo.css">
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prefixfree/1.0.7/prefixfree.min.js"></script>
+      <link rel="icon" href="{{ url_for('static', filename='img/favicon.ico') }}" type="image/x-icon">
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+      </head>
+      
+<body>
+    <div class="header">  
+        <div class="header__logo">
+          <a href="{{ url_for('inicio') }}">
+            <img src="{{ url_for('static', filename='img/logoF.png') }}" class="imagen-con-brillo" style="width: 30%; margin-top: 2%;"></img>
+          </a>
+        </div>
+        <nav class="navbar">
+          <ul class="navbar__menu">
+            <li class="navbar__item">
+              <a href="{{ url_for('inicio') }}" class="navbar__link"><i data-feather="Inicio"></i><span>Inicio</span> </a>
+            </li>
+            <li class="navbar__item">
+              <a href="{{ url_for('bigdata') }}" class="navbar__link"><i data-feather="Big data"></i><span>Big data</span></a>        
+            </li>
+            <li class="navbar__item">
+              <a href="{{ url_for('miequipo') }}" class="navbar__link"><i data-feather="Mi equipo"></i><span>Mi equipo</span></a>        
+            </li>
+            <li class="navbar__item">
+              <a href="{{ url_for('predictor') }}" class="navbar__link"><i data-feather="Predictor"></i><span>Predictor</span></a>        
+            </li>
+          </ul>
+        </nav>
+      </div>
+      <!-- partial -->
+        <script src='https://unpkg.com/feather-icons'></script><script  src="./script.js"></script>
+      
+
+    <!-- Contenido de la pï¿½gina -->
+    
+<html>
+<head>
+    <link rel="stylesheet" href="css/card.css">
+    <link rel="stylesheet" href="css/font-awesome.min.css">
+
+
+</head>
+<body>
+  <label for="formacion" style="color: aliceblue;">Selecciona una formación:</label>
+  <select class="select" id="formacion" onchange="mostrarFormacion()">
+    <option class="option" value="4-4-2">4-4-2</option>
+    <option class="option" value="3-5-2">3-5-2</option>
+    <!-- Puedes agregar más formaciones aquí -->
+  </select>
+
+  <div style="color: white" id="divValorTotal">0€</div>
+  <div style="color: white" id="divSubidaTotal">0€</div>
+
+
+  <div class="field" id="field"></div>
+
+  <script>
+    const jugadores = JSON.parse({{ jugadores | tojson | safe }}); // Reemplaza por la lógica de Flask para obtener los jugadores
+    var valorTotal = 0;
+    var subidaTotal = 0;
+
+    function mostrarInfo(carta) {
+        const numeroCarta = carta.textContent;
+        alert("Información adicional para la carta " + numeroCarta);
+      }
+
+    function mostrarFormacion() {
+      const formacionSeleccionada = document.getElementById("formacion").value;
+      const field = document.getElementById("field");
+      valorTotal = 0;
+      subidaTotal = 0;
+
+      // Limpia el campo antes de mostrar la nueva formación
+      field.innerHTML = "";
+
+      // Define el número de jugadores por fila según la formación
+      let jugadoresPorFila;
+      if (formacionSeleccionada === "4-4-2") {
+        jugadoresPorFila = [1, 4, 4, 2];
+      } else if (formacionSeleccionada === "3-5-2") {
+        jugadoresPorFila = [1, 3, 5, 2];
+      }
+
+      // Agrega las cartas al campo según la formación seleccionada
+      let cartaCount = 0;
+      let cartaCount2 = 0;
+      for (let i = 0; i < jugadoresPorFila.length; i++) {
+        for (let j = 0; j < jugadoresPorFila[i]; j++) {
+          const carta = document.createElement("div");
+          carta.className = "cardFormacion";
+          carta.style.color = "white";
+          cartaCount++;
+          carta.setAttribute("mod", "false");
+
+
+          // Agregar el selector de jugadores específico para esta carta
+          
+          const dorsalNombre = document.createElement("div");
+          dorsalNombre.className = "dorsalNombre";
+          dorsalNombre.textContent = cartaCount;
+
+          const topCard = document.createElement("div");
+          topCard.style.display = "ruby";
+
+
+          const infoB = document.createElement("div");
+          infoB.innerHTML = `
+          <button  class="infoButton" style="display: none;" onclick="darVueltaCard(this.closest('.cardFormacion'))">+ Info</button>          
+          `;
+
+          const borraB = document.createElement("div");
+          borraB.innerHTML = `
+          <button class="cambioButton" style="display: none;" onclick="mostrarSelectorJugador(this.closest('.cardFormacion'))"><i class="fa fa-trash"></i></button>
+          `;
+
+          topCard.appendChild(borraB);
+          topCard.appendChild(dorsalNombre);
+          topCard.appendChild(infoB);
+
+          const jugadorSelector = document.createElement("div");
+          jugadorSelector.className = "jugadorSelector";
+          jugadorSelector.style.display = "none";
+          var demarcacion = "Defensa";
+          if(i==0)
+            demarcacion = "Portero";
+          else if(i==1)
+            demarcacion = "Defensa";
+          else if(i==2)
+            demarcacion = "Centrocampista";
+          else if(i==3)
+            demarcacion = "Delantero";
+
+          const fronte = document.createElement("div");
+          const backe = document.createElement("div");
+
+          fronte.className ="front bg-red-box";
+
+          backe.className ="back";
+          backe.innerHTML = `
+          <div style="color: white" class="cardValor">0€</div>
+          <div style="color: white" class="cardSubida">0€</div>
+          <button class="verJugador">Volver</button>
+          
+          `;
+
+
+          jugadorSelector.innerHTML = `
+          <input class="jugadores" style="width: 100%" list="${demarcacion}" >
+          <datalist id="${demarcacion}"></datalist>
+          <img class="imagenJugador" src="" alt="Imagen del jugador" style="display: none; width:150px;">
+          <i class="icon-ok-sign"></i>
+          `;
+          jugadorSelector.setAttribute("data-demarcacion", demarcacion); // Guardar la demarcación en el atributo data-
+          const okIcon = jugadorSelector.querySelector(".icon-ok-sign");
+          okIcon.setAttribute("state", "ok");
+          // Obtener la referencia al elemento <img>
+          fronte.appendChild(topCard);
+          fronte.appendChild(jugadorSelector);
+          const demarcacionCarta = jugadorSelector.getAttribute("data-demarcacion");
+
+          const datalistJugadores = jugadorSelector.querySelector("#" + demarcacionCarta);
+              // Llenar dinámicamente las opciones del selector de jugadores específico para esta carta
+          const inputJugador = jugadorSelector.querySelector(".jugadores");
+          inputJugador.value = "";  // Limpiar el valor del input
+
+          // Mostrar el selector de jugadores para esta carta
+          jugadorSelector.style.display = "flex";
+          inputJugador.style.display = "block";
+
+          const verMetricasBtn = fronte.querySelector(".infoButton");
+          const verPrediccionBtn = backe.querySelector(".verJugador");
+          const front = carta.querySelector('.front');
+
+
+          verMetricasBtn.addEventListener('click', () => {
+            carta.classList.add('active');
+            backe.style.backfaceVisibility="visible";
+            const imag = fronte.querySelector(".imagenJugador");
+            imag.style.display = "none";
+          });
+
+          verPrediccionBtn.addEventListener('click', () => {
+            carta.classList.remove('active');
+            backe.style.backfaceVisibility="hidden";
+            const imag = fronte.querySelector(".imagenJugador");
+            imag.style.display = "block";
+          });
+
+          
+          carta.appendChild(fronte);
+          carta.appendChild(backe);
+
+
+
+          
+          // Agregar un event listener al input para detectar cambios
+          inputJugador.addEventListener("input", function (event) {
+            mostrarImagen(carta);
+          });
+
+        // Agregar un event listener al input para borrar el contenido al perder el foco
+          inputJugador.addEventListener("blur", function () {
+            inputJugador.value = ""; // Borrar el contenido del input al perder el foco
+          });
+
+        // Agregar un event listener al input para detener la propagación de clics
+        inputJugador.addEventListener("click", function (event) {
+          event.stopPropagation();
+          });
+        jugadores.forEach((jugadorObj) => {
+          const jugador = jugadorObj.jugador;
+            if (jugador.position === demarcacionCarta) {
+                const opcion = document.createElement("option");
+                opcion.value = jugador.id;
+                opcion.text = jugador.nombre;
+                datalistJugadores.appendChild(opcion);
+              }
+             });
+          mostrarSelectorJugador(carta);
+
+          field.appendChild(carta);
+        }
+        field.appendChild(document.createElement("br")); // Salto de línea después de cada fila
+      }
+      // Añade una pequeña demora antes de aplicar la nueva posición para permitir la animación
+      setTimeout(() => {
+        mezclarCartas(); // Llamada a la función para mezclar las cartas
+      }, 50);
+    }
+
+    // Función para mezclar las cartas hacia el centro de la pantalla
+    function mezclarCartas() {
+      const cards = document.querySelectorAll(".cardFormacion");
+      const container = document.getElementById("field");
+      const centerX = container.clientWidth / 2;
+      const centerY = container.clientHeight / 2;
+
+      valorTotal = 0;
+      subidaTotal = 0;
+
+      cards.forEach((card) => {
+        const rect = card.getBoundingClientRect();
+        const cardX = rect.left + rect.width / 2;
+        const cardY = rect.top + rect.height / 2;
+
+        const offsetX = centerX - cardX;
+        const offsetY = centerY - cardY;
+
+        card.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
+      });
+
+      // Añade una pequeña demora antes de resetear las posiciones
+      setTimeout(() => {
+        resetearPosiciones(); // Llamada a la función para resetear las posiciones
+      }, 500);
+
+            // Añade una pequeña demora antes de resetear las posiciones
+        setTimeout(() => {
+        reseteoTransform();
+      }, 500);
+    }
+
+    // Función para resetear las posiciones
+function reseteoTransform() {
+  const cards = document.querySelectorAll(".cardFormacion");
+  cards.forEach((card) => {
+    card.style.removeProperty("transform");
+  });
+}
+
+
+    // Función para resetear las posiciones
+    function resetearPosiciones() {
+      const cards = document.querySelectorAll(".cardFormacion");
+      cards.forEach((card) => {
+        card.style.transform = "translate(0, 0)";
+      });
+    }
+
+    function darVueltaCard(carta) {
+      carta.classList.add('active');
+
+    }
+    function darVueltaCard2(carta) {
+    carta.classList.remove('active');
+  }
+    function mostrarSelectorJugador(carta) {
+    // Obtener el div del selector de jugadores específico para esta carta
+    const jugadorSelector = carta.querySelector(".jugadorSelector");
+    const botonInfo = carta.querySelector(".infoButton");
+    const botonCambio = carta.querySelector(".cambioButton");
+    const infoDorsal = carta.querySelector(".dorsalNombre");
+    const imagenJugador = carta.querySelector(".imagenJugador");
+    const inputJugador = jugadorSelector.querySelector(".jugadores");
+
+    inputJugador.style.display="block";
+    
+    if(carta.getAttribute("mod") === "true"){
+    const cardValor = carta.querySelector(".cardValor");
+    const cardSubida = carta.querySelector(".cardSubida");
+    const divValor = document.querySelector("#divValorTotal");
+    const divSubida = document.querySelector("#divSubidaTotal");
+
+    var valorPre = parseInt(cardValor.getAttribute("valor"));
+    var subidaPre = parseInt(cardSubida.getAttribute("subida"));
+    valorTotal = valorTotal - valorPre;
+    subidaTotal = subidaTotal - subidaPre;
+
+    var valorFin = valorTotal;
+    var subidaFin = subidaTotal;
+    console.log(valorTotal);
+    console.log(valorPre);
+
+
+    divValor.textContent = valorFin + " €";
+    divSubida.textContent = subidaFin + " €";
+    cardValor.setAttribute("valor", 0);
+    cardSubida.setAttribute("subida", 0);
+    cardValor.textContent = "0€";
+    cardSubida.textContent = "0€";
+    
+    valorPre = 0;
+    subidaPre = 0;
+
+    }
+    carta.setAttribute("mod", "true");
+
+
+
+
+    imagenJugador.style.display = "none";
+    infoDorsal.innerHTML = "Vacío";
+    botonInfo.style.display = "none";
+    botonCambio.style.display = "none";
+    carta.style.boxShadow ="";
+
+
+}
+
+
+function mostrarImagen(carta) {
+    const selectorJugadores = carta.querySelector(".jugadores");
+    const imagenJugador = carta.querySelector(".imagenJugador");
+    const botonInfo = carta.querySelector(".infoButton");
+    const botonCambio = carta.querySelector(".cambioButton");
+    const dorsalNombre = carta.querySelector(".dorsalNombre");
+    const iconSate = carta.querySelector("i[state]");
+    const cardValor = carta.querySelector(".cardValor");
+    const cardSubida = carta.querySelector(".cardSubida");
+    const divValor = document.querySelector("#divValorTotal");
+    const divSubida = document.querySelector("#divSubidaTotal");
+
+
+    const jugadorSeleccionado = selectorJugadores.value;
+
+    carta.style.boxShadow = "0 0 10px rgba(255, 0, 0, 0.7)";
+
+    // Obtener la información del jugador desde la lista de jugadores
+    if (jugadores.find((jugadorObj) => jugadorObj.jugador.id == jugadorSeleccionado)){
+      const jugador = jugadores.find((jugadorObj) => jugadorObj.jugador.id == jugadorSeleccionado);
+
+    // Verificar si se encontró el jugador antes de acceder a sus propiedades
+    if (jugador) {
+        imagenJugador.style.display = "none";
+        dorsalNombre.textContent = jugador.jugador.nombre;
+
+        cardValor.setAttribute("valor", jugador.jugador.valor);
+        cardSubida.setAttribute("subida", jugador.jugador.subida);
+        cardValor.textContent = jugador.jugador.valor + " €";
+        cardSubida.textContent = jugador.jugador.subida + " €";
+
+        valorTotal += jugador.jugador.valor;
+        subidaTotal += jugador.jugador.subida;
+        divValor.textContent = valorTotal;
+        divSubida.textContent = subidaTotal;
+
+        divValor.textContent = valorTotal + " €";
+        divSubida.textContent = subidaTotal + " €";
+
+        // Mostrar la imagen del jugador si se encuentra
+        if (jugador.jugador) {
+            imagenJugador.src = jugador.jugador.imagen;
+            imagenJugador.style.display = "block";
+            botonInfo.style.display = "block";
+            botonCambio.style.display = "block";
+            if(jugador.jugador.state === "ok"){
+              iconSate.className = "fa fa-ok";
+            }
+            else if(jugador.jugador.state === "doubtful"){
+              iconSate.className = "fa fa-question";
+            }
+            else if(jugador.jugador.state === "injured") {
+              iconSate.className = "fa fa-cross";
+            }
+        } else {
+            imagenJugador.style.display = "none";
+            botonInfo.style.display = "none";
+            botonCambio.style.display = "block";
+        }
+
+        // Ocultar el selector de jugadores específico para esta carta
+        selectorJugadores.style.display = "none";
+    } else {
+        // Lidiar con el caso cuando no se encuentra el jugador
+        console.error("Jugador no encontrado:", jugadorSeleccionado);
+    }
+    }
+
+    //Actualización Métricas Generales
+
+      
+}
+
+
+    // Muestra la formación predeterminada al cargar la página
+    mostrarFormacion();
+  </script>
+
+</body>
+
+
+    <div class="contenido">
+        <link rel="stylesheet" href="css/backg.css">
+        <div class="lines">
+            <div class="line"></div>
+            <div class="line"></div>
+            <div class="line"></div>
+          </div>
+        
+    </div>
+
+    <!-- Pie de pï¿½gina -->
+    <footer style="text-align: center; margin-top: 5%;" class="pie-de-pagina">
+      <p style="font-weight: bold">Redes sociales</p>
+      <div class="redes-sociales">
+        <a href="https://www.linkedin.com/in/alejandro-milla-ram%C3%ADrez-3ba742209/"><img style="width: 2%;" src="{{ url_for('static', filename='img/linkedin.png') }}" alt="LinkedIn"></a>
+        <a href="https://www.instagram.com/alex_milla99/"><img style="width: 2%;" src="{{ url_for('static', filename='img/instagram.png') }}" alt="Instagram"></a>
+        <a href="mailto:alejandromilla99@gmail.com"><img style="width: 2%;" src="{{ url_for('static', filename='img/email.png') }}" alt="Correo Electrónico"></a>
+      </div>
+  </footer>
+</body>
+</html>
